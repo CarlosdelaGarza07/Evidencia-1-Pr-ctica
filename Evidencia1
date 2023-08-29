@@ -1,0 +1,34 @@
+print("Bienvenido al servicio de taller mecánico")
+print("¿Qué le podemos ofrecer")
+while True:
+    opcion= int(input("""Este es nuestro menú de nuestros servicios, presione un número para continuar:
+1. Registrar una nota
+2. Consultas y reportes
+3. Cancelar una nota
+4. Recuperar una nota
+5. Salir del menú
+R= """))
+    
+    if opcion == 1:
+        print("Registro de nota")
+        nombre = input("Dame tu primer nombre con tu primer apellido: ")
+    if nombre.strip() == "":
+        break
+    
+    servicio_hecho = input("Describa el servicio que se le ofreció")
+    precio_serivicio = 
+    
+    
+        
+    if opcion == 2:
+        print("Consultas y reportes")
+            
+    if opcion == 3:
+        print("Cancelar una nota")
+                
+    if opcion == 4:
+        print("Recuperar una nota")
+                    
+    if opcion == 5:
+        print("Gracias por utilizar nuestros servicios")
+        break
