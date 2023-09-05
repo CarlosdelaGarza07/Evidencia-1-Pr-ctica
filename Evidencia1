@@ -28,7 +28,31 @@ R= """))
                 
     if opcion == 4:
         print("Recuperar una nota")
-                    
+        print("Folio\t\tDatos")
+        for folio, datos in servicio_cancelado.items():
+            print(f"{folio}\t\t{datos}")
+        while True: 
+            try:
+              folio_recuperar=int(input("Ingrese el folio que desea recuperar: "))
+              for folio_recuperar in servicio:
+                    servicio[folio_recuperar] = [fecha_nueva, nombre_cliente, monto, nombre_servicio]
+                    print(servicio[folio_recuperar])
+            except KeyError: 
+                print("No se encuentra registrado ese folio, vuelve a intentarlo")
+                break
+            except ValueError:
+                print("No se acepta ese folio. Vuelve a intentarlo.")
+                break
+            op_recuperar = int(input("¿Desea recuperar la nota? 1-Si 2-No: "))
+            if op_recuperar == 1:
+                recuperar=servicio_cancelado.pop(folio_recuperar)
+                servicio[folio_recuperar]=recuperar
+                print("Se ha recuperado la nota correctamente.")
+                print(servicio[folio_recuperar])
+                break
+            elif op_recuperar == 2:
+                print("Se ha cancelado la recuperacion")
+                break            
     if opcion == 5:
         print("Gracias por utilizar nuestros servicios")
         break
