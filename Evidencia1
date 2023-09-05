@@ -1,58 +1,172 @@
+import datetime
+import time
+
+fecha_actual = datetime.date.today()
+servicio = {}
+servicio_cancelado = {}
+servicio_recuperado={}
 print("Bienvenido al servicio de taller mecánico")
-print("¿Qué le podemos ofrecer")
+print("¿Qué le podemos ofrecer?")
+
 while True:
-    opcion= int(input("""Este es nuestro menú de nuestros servicios, presione un número para continuar:
-1. Registrar una nota
-2. Consultas y reportes
-3. Cancelar una nota
-4. Recuperar una nota
-5. Salir del menú
-R= """))
-    
-    if opcion == 1:
-        print("Registro de nota")
-        nombre = input("Dame tu primer nombre con tu primer apellido: ")
-    if nombre.strip() == "":
-        break
-    
-    servicio_hecho = input("Describa el servicio que se le ofreció")
-    precio_serivicio = 
-    
-    
+    try:
+        opcion= int(input("""Este es nuestro menú de nuestros servicios, presione un número para continuar:
+    1. Registrar una nota
+    2. Consultas y reportes
+    3. Cancelar una nota
+    4. Recuperar una nota
+    5. Salir del menú
+    R= """))
         
-    if opcion == 2:
-        print("Consultas y reportes")
+        if opcion == 1:
+            print("Registro de nota")
+            while True:
+                try:
+                    fecha_nota = input("Ingrese la fecha de la nota (dd/mm/aaaa):\n ")
+                    fecha_nueva = datetime.datetime.strptime(fecha_nota, "%d/%m/%Y").date()
+                except Exception:
+                    print("Fecha no válida")
+                else:
+                    if fecha_nueva > fecha_actual:
+                        print("Fecha mayor a la actual. Intente de nuevo")
+                        continue
+                    break
+
+            while True:
+                nombre_cliente = input("Ingrese su nombre y apellido:\n ")
+                if nombre_cliente.strip() == "":
+                    print("Nombre no válido")
+                    continue
+                break
+
+            while True:
+                try:
+                    monto = float(input("Ingrese el monto a pagar:\n "))
+                except Exception:
+                    print("Monto no escrito correctamente en números, intente nuevamente")
+                    continue
+                break
+
+            while True:
+                nombre_servicio = input("Ingrese el nombre del servicio:\n ")
+                if nombre_servicio.strip() == "":
+                    print("Nombre no válido")
+                    continue
+                break
+
+            folio = max(servicio.keys(), default=0) + 1
+            servicio[folio] = [
+                nombre_servicio,
+                fecha_nueva,
+                nombre_cliente,
+                monto
+            ]
+
+            print("Registro de Nota:")
+            print(f"Folio\tFecha\t\tNombre del Cliente\tMonto\tNombre del Servicio")
+            for folio, datos in servicio.items():
+                print(f"{folio}\t{datos[1]}\t{datos[2]}\t\t\t{datos[3]}\t{datos[0]}")
+            print("\n")        
             
-    if opcion == 3:
-        print("Cancelar una nota")
+        if opcion == 2:
+            print("Consultas y reportes")
+            print("Bienvenido al submenú de consultas")
+            while True:
+                submenu_opc = int(input("""En este menú tenemos 3 opciones las cuales son las siguientes:
+                1. Consulta por periodo
+                2. Consulta por folio
+                3. Salir al menú principal
+                Favor de escoger una opción: """))
+
+                if submenu_opc == 1:
+                    print("Escogiste consulta por periodo")
+                    while True:
+                        try:
+                            fecha_inicial_str = input("Ingrese la fecha inicial (dd/mm/aaaa):\n ")
+                            fecha_final_str = input("Ingrese la fecha final (dd/mm/aaaa):\n ")
+                            fecha_inicial = datetime.datetime.strptime(fecha_inicial_str, "%d/%m/%Y").date()
+                            fecha_final = datetime.datetime.strptime(fecha_final_str, "%d/%m/%Y").date()
+                            
+                        except Exception:
+                            print("Tu respuesta no está bien escrita, intenta otra vez")   
+                            continue
+                        
+                        else:       
+                            if fecha_nueva > fecha_inicial and fecha_nueva < fecha_final:
+                                consulta_periodo_fecha_inicio = {folio: tuple(datos) for folio, datos in servicio.items() if fecha_nueva > fecha_inicial}
+                                consulta_periodo_fecha_final = {folio: tuple(datos) for folio, datos in servicio.items() if fecha_nueva < fecha_final}
+
+                                print("Consulta por Periodo:")
+                                print("Folio\tFecha\tNombre del Cliente\tMonto\tNombre del Servicio")
+                                for folio, datos in (consulta_periodo_fecha_inicio | consulta_periodo_fecha_final).items():
+                                    print(f"{folio}\t{datos[1]}\t{datos[2]}\t{datos[3]}\t{datos[0]}")
+                                print("\n")
+                                break
+                        
+                            elif fecha_nueva < fecha_inicial and fecha_nueva > fecha_final:
+                                print("No se encontraron notas durante este periodo")
+                                break
+
+                if submenu_opc == 2:
+                    print("Escogiste consulta por folio")
+                    while True:
+                        try:
+                            consulta_folio = int(input("Ingresa el número de folio: "))
+                            folio_consultas = {folio: valor for folio, valor in servicio.items() if consulta_folio == folio}
+                        
+                        except Exception:
+                            print("No escribiste bien el dato, vuelve a intentar")
+                            continue
+                        
+                        else:
+                            if consulta_folio == folio:
+                                folio_consultas = {folio: valor for folio, valor in servicio.items() if consulta_folio == folio}
+
+                                print(f"Consulta por Folio ({consulta_folio}):")
+                                print(f"Folio\tFecha\t\tNombre del Cliente\tMonto\tNombre del Servicio")
+                                for folio, datos in folio_consultas.items():
+                                    print(f"{folio}\t{datos[1]}\t{datos[2]}\t\t\t{datos[3]}\t{datos[0]}")
+                                print("\n")
+                            
+                            if not consulta_folio == folio:
+                                print("No se encontraron notas con ese folio")
+                                break
+                        break
                 
-    if opcion == 4:
-        print("Recuperar una nota")
-        print("Folio\t\tDatos")
-        for folio, datos in servicio_cancelado.items():
-            print(f"{folio}\t\t{datos}")
-        while True: 
-            try:
-              folio_recuperar=int(input("Ingrese el folio que desea recuperar: "))
-              for folio_recuperar in servicio:
-                    servicio[folio_recuperar] = [fecha_nueva, nombre_cliente, monto, nombre_servicio]
+        if opcion == 3:
+            print("Cancelar una nota")
+                    
+        if opcion == 4:
+            print("Recuperar una nota")
+            print("Folio\t\tDatos")
+            for folio, datos in servicio_cancelado.items():
+                print(f"{folio}\t\t{datos}")
+            while True: 
+                try:
+                  folio_recuperar=int(input("Ingrese el folio que desea recuperar: "))
+                  for folio_recuperar in servicio:
+                        servicio[folio_recuperar] = [fecha_nueva, nombre_cliente, monto, nombre_servicio]
+                        print(servicio[folio_recuperar])
+                except KeyError: 
+                    print("No se encuentra registrado ese folio, vuelve a intentarlo")
+                    break
+                except ValueError:
+                    print("No se acepta ese folio. Vuelve a intentarlo.")
+                    break
+                op_recuperar = int(input("¿Desea recuperar la nota? 1-Si 2-No: "))
+                if op_recuperar == 1:
+                    recuperar=servicio_cancelado.pop(folio_recuperar)
+                    servicio[folio_recuperar]=recuperar
+                    print("Se ha recuperado la nota correctamente.")
                     print(servicio[folio_recuperar])
-            except KeyError: 
-                print("No se encuentra registrado ese folio, vuelve a intentarlo")
-                break
-            except ValueError:
-                print("No se acepta ese folio. Vuelve a intentarlo.")
-                break
-            op_recuperar = int(input("¿Desea recuperar la nota? 1-Si 2-No: "))
-            if op_recuperar == 1:
-                recuperar=servicio_cancelado.pop(folio_recuperar)
-                servicio[folio_recuperar]=recuperar
-                print("Se ha recuperado la nota correctamente.")
-                print(servicio[folio_recuperar])
-                break
-            elif op_recuperar == 2:
-                print("Se ha cancelado la recuperacion")
-                break            
-    if opcion == 5:
-        print("Gracias por utilizar nuestros servicios")
-        break
+                    break
+                elif op_recuperar == 2:
+                    print("Se ha cancelado la recuperacion")
+                    break            
+        if opcion == 5:
+            print("Gracias por utilizar nuestros servicios")
+            break
+
+    except Exception:
+        print("No escribiste el dato correcto  o no existe, vuelvelo a intentar")
+        continue
