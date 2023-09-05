@@ -136,6 +136,7 @@ while True:
             if submenu_opc == 3:
                     print("Saliendo")
                     break
+
         if opcion == 3:
             print("Cancelar una nota")
             while True: 
