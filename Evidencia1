@@ -135,6 +135,35 @@ while True:
                 
         if opcion == 3:
             print("Cancelar una nota")
+            while True: 
+                print("Folio\t\tDatos")
+                for folio, datos in servicio.items():
+                    print(f"{folio}\t\t{datos}")
+                break
+            while True: 
+                try:
+                  folio_cancelar=int(input("Ingrese el folio que desea cancelar: "))
+                  for folio_cancelar in servicio:
+                        servicio[folio_cancelar] = [folio, fecha_nueva, nombre_cliente, monto, nombre_servicio]
+                        print(servicio[folio_cancelar])
+
+                except KeyError: 
+                    print("No se encuentra registrado ese folio, vuelve a intentarlo")
+                    break
+                except ValueError:
+                    print("No se acepta ese folio. Vuelve a intentarlo.")
+                    break
+                op_eliminar = int(input("¿Desea cancelar la nota? 1-Si 2-No: "))
+
+                if op_eliminar == 1:
+                    servicio_cancelado[folio_cancelar] = [fecha_nueva, nombre_cliente, monto, nombre_servicio]
+                    cancelar=servicio.pop(folio_cancelar)
+                    print("Se ha cancelado la nota correctamente.")
+                    print(servicio_cancelado[folio_cancelar])
+                    break
+                elif op_eliminar == 2:
+                    print("No se va a cancelar la nota")
+                    break                            
                     
         if opcion == 4:
             print("Recuperar una nota")
