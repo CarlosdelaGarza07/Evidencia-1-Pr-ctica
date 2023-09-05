@@ -195,7 +195,8 @@ while True:
                     break
                 elif op_recuperar == 2:
                     print("Se ha cancelado la recuperacion")
-                    break            
+                    break    
+
         if opcion == 5:
             print("Gracias por utilizar nuestros servicios")
             break
