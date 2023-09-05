@@ -133,8 +133,10 @@ while True:
                                 break
                         break
                 
-        if opcion == 3:
-            print("Cancelar una nota")
+            if submenu_opc == 3:
+                    print("Saliendo")
+                    break
+
             while True: 
                 print("Folio\t\tDatos")
                 for folio, datos in servicio.items():
