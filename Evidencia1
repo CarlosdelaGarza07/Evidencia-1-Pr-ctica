@@ -81,31 +81,34 @@ while True:
                 if submenu_opc == 1:
                     print("Escogiste consulta por periodo")
                     while True:
-                        try:
-                            fecha_inicial_str = input("Ingrese la fecha inicial (dd/mm/aaaa):\n ")
-                            fecha_final_str = input("Ingrese la fecha final (dd/mm/aaaa):\n ")
+                            fecha_inicial_str = input("Ingrese la fecha inicial (dd/mm/aaaa):\n")
+                            if fecha_inicial_str.strip() == "":
+                                fecha_inicial_str = "01/01/2000" 
                             fecha_inicial = datetime.datetime.strptime(fecha_inicial_str, "%d/%m/%Y").date()
-                            fecha_final = datetime.datetime.strptime(fecha_final_str, "%d/%m/%Y").date()
-                            
-                        except Exception:
-                            print("Tu respuesta no está bien escrita, intenta otra vez")   
-                            continue
-                        
-                        else:       
-                            if fecha_nueva > fecha_inicial and fecha_nueva < fecha_final:
-                                consulta_periodo_fecha_inicio = {folio: tuple(datos) for folio, datos in servicio.items() if fecha_nueva > fecha_inicial}
-                                consulta_periodo_fecha_final = {folio: tuple(datos) for folio, datos in servicio.items() if fecha_nueva < fecha_final}
+                            print(f"La fecha que se colocará es: {fecha_inicial.strftime('%d/%m/%Y')}")
 
-                                print("Consulta por Periodo:")
-                                print("Folio\tFecha\tNombre del Cliente\tMonto\tNombre del Servicio")
-                                for folio, datos in (consulta_periodo_fecha_inicio | consulta_periodo_fecha_final).items():
-                                    print(f"{folio}\t{datos[1]}\t{datos[2]}\t{datos[3]}\t{datos[0]}")
-                                print("\n")
-                                break
-                        
-                            elif fecha_nueva < fecha_inicial and fecha_nueva > fecha_final:
-                                print("No se encontraron notas durante este periodo")
-                                break
+                            fecha_final_str = input("Ingrese la fecha final (dd/mm/aaaa):\n")
+                            if fecha_final_str.strip() == "":
+                                fecha_final_str =datetime.date.today()
+                            fecha_final = fecha_final_str
+
+                            print(f"La fecha que se colocara es: {fecha_inicial.strftime('%d/%m/%Y')}")
+
+                            if fecha_final < fecha_inicial:
+                                print("La fecha final debe ser posterior a la fecha inicial. Intenta de nuevo.")                           
+
+                            if fecha_inicial <= fecha_final:
+                               consulta_periodo = {folio: tuple(datos) for folio, datos in servicio.items() if fecha_inicial <= datos[1] <= fecha_final}
+                               filtro_monto  = [datos[3] for datos in consulta_periodo.values()]   
+                               promedio_monto = np.mean(filtro_monto)            
+
+                               print("Consulta por Periodo:")
+                               print("Folio\tFecha\tNombre del Cliente\tMonto\tNombre del Servicio")
+                               for folio, datos in consulta_periodo.items():
+                                   print(f"{folio}\t{datos[1]}\t{datos[2]}\t{datos[3]}\t{datos[0]}")
+                                   print("\n")
+                                   print(f"El promedio del monto es: {folio}")
+                            break   
 
                 if submenu_opc == 2:
                     print("Escogiste consulta por folio")
