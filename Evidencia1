@@ -1,12 +1,16 @@
 import datetime
 import time
+import re
 
+rfc_pattern = r'^[A-Z&Ñ]{4}\d{6}[A-Z\d]{3}$'
+email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 fecha_actual = datetime.date.today()
 servicio = {}
 servicio_cancelado = {}
 servicio_recuperado={}
 print("Bienvenido al servicio de taller mecánico")
 print("¿Qué le podemos ofrecer?")
+
 
 while True:
     try:
@@ -21,6 +25,7 @@ while True:
         if opcion == 1:
             print("Registro de nota")
             while True:
+                while True:
                 try:
                     fecha_nota = input("Ingrese la fecha de la nota (dd/mm/aaaa):\n ")
                     fecha_nueva = datetime.datetime.strptime(fecha_nota, "%d/%m/%Y").date()
@@ -40,32 +45,62 @@ while True:
                 break
 
             while True:
-                try:
-                    monto = float(input("Ingrese el monto a pagar:\n "))
-                except Exception:
-                    print("Monto no escrito correctamente en números, intente nuevamente")
-                    continue
-                break
-
-            while True:
                 nombre_servicio = input("Ingrese el nombre del servicio:\n ")
                 if nombre_servicio.strip() == "":
                     print("Nombre no válido")
                     continue
                 break
 
+            while True:
+                    try:
+                        monto = float(input("Ingrese el monto a pagar:\n "))
+                        if monto < 0:
+                            continue
+                    except Exception:
+                        print("Monto no escrito correctamente en números, intente nuevamente")
+                        continue
+                    break
+
+            while True:
+                rfc = input("Ingrese su RFC, recuerda usar el formato de RFC, por ejemplo XEXT990101NI4:\n ").strip().upper()
+                if re.match(rfc_pattern, rfc):
+                    print(f"RFC valido: {rfc}")
+                    break
+                else:
+                    print("RFC no valido. Por favor, ingrese un RFC valido en el formato correcto")
+
+            while True:
+                email_cliente = input("Ingrese su correo electronico:\n ")
+                if re.match(email_pattern, email_cliente):
+                    print(f"Correo electronico valido: {email_cliente}")
+                    break
+                else:
+                    print("Correo electronico no valido. Por favor, ingrese un correo valido")
+
             folio = max(servicio.keys(), default=0) + 1
             servicio[folio] = [
                 nombre_servicio,
                 fecha_nueva,
                 nombre_cliente,
-                monto
+                round (monto, 2),
+                rfc,
+                email_cliente
             ]
 
+            opcion_registro_1 = int(input("""¿Te gustaria registrar un servicio mas a la nota?
+    1. Si
+    2. No:
+    """))
+            if opcion_registro_1 == 1:
+                continue
+
+            if opcion_registro_1 == 2:
+                break
+
             print("Registro de Nota:")
-            print(f"Folio\tFecha\t\tNombre del Cliente\tMonto\tNombre del Servicio")
+            print(f"Folio\t\tFecha\t\tNombre del Cliente\tMonto\tNombre del Servicio\tRFC              Correo Electronico")
             for folio, datos in servicio.items():
-                print(f"{folio}\t{datos[1]}\t{datos[2]}\t\t\t{datos[3]}\t{datos[0]}")
+                print(f"{folio}\t{datos[1]}\t{datos[2]}\t\t\t{datos[3]}\t\t{datos[0]}\t\t{datos[4]}    {datos[5]}")
             print("\n")   
             
         if opcion == 2:
