@@ -9,8 +9,20 @@ servicio = {}
 servicio_cancelado = {}
 servicio_recuperado={}
 print("Bienvenido al servicio de taller mecánico")
+try:
+    with open("datosTaller.csv","r",newline="") as archivo:
+        lector=csv.reader(archivo)
+        next(lector)
+        for folio,fecha,cliente,monto,servicio,rfc,correo  in lector:
+            datos_leer[int(folio)]=(fecha,cliente,float(monto),servicio,rfc,correo)
+except FileNotFoundError:
+    print("No se encontro archivo anterior, se procede a trabajar con un conjunto vacío")
+except Exception:
+    print("Ocurrio un problema al encontrar archivo")
+else:
+    print("Datos cargados")
+    servicio=datos_leer
 print("¿Qué le podemos ofrecer?")
-
 
 while True:
     try:
@@ -262,8 +274,21 @@ while True:
                     break    
 
         if opcion == 5:
-            print("Gracias por utilizar nuestros servicios")
-            break
+            salir_menu=input("¿Desea salir del menu? 1-Si 2-No ")
+            if salir_menu=="1":
+                datos_grabar=dict()
+                datos_grabar=servicio
+                archivo=open("datosTaller.csv","w",newline="")
+                grabador=csv.writer(archivo)
+                grabador.writerow(("Folio","Fecha","Cliente","Monto","Servicio","rfc","correo"))
+                for folio, datos in datos_grabar.items():
+                    grabador.writerow((folio,datos[0],datos[1],datos[2],datos[3],datos[4],datos[5]))
+                archivo.close()
+                print("Los datos han sido grabados correctamente")
+                print(datos_grabar)
+                break
+            if salir_menu=="2":
+                continue
 
     except Exception:
         print("No escribiste el dato correcto  o no existe, vuelvelo a intentar")
