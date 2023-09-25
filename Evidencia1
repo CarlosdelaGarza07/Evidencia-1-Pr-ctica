@@ -170,24 +170,46 @@ while True:
                                 print("No se encontraron notas con ese folio")
                                 break
                         break
-                
+
             if submenu_opc == 3:
+                    rfcs_ordenados = sorted(servicio.keys())
+                    print("Lista de RFC ordenados alfabéticamente:")
+                    for i, datos[4] in enumerate(rfcs_ordenados, 1):
+                        print(f"Folio {i}: {datos[4]}")
+                    while True:
+                        try:
+                            Consulta_Cliente = int(input("Escribe el número de folio que buscas para realizar la búsqueda: "))
+                            
+                        except Exception:
+                            print("No escribiste bien el dato, intenta otra vez")
+                            continue
+                        
+                        else:
+                            if Consulta_Cliente in servicio:
+                                Consulta_Cliente = {folio: rfc for folio, rfc in servicio.items() if Consulta_Cliente == folio}
+                                for datos[4], datos in folio_consultas.items():
+                                    print(f"Folio\tFecha\t\tNombre del Cliente\tMonto\tNombre del Servicio\tRFC                 Correo Electronico")
+                                    print(f"{folio}\t{datos[0]}\t{datos[1]}\t\t{datos[2]}\t\t{datos[3]}\t\t{datos[4]}       {datos[5]}")
+                                print("\n")
+                                break
+                
+            if submenu_opc == 4:
                     print("Saliendo")
                     break
 
         if opcion == 3:
             print("Cancelar una nota")
             while True: 
-                print("Folio\t\tDatos")
                 for folio, datos in servicio.items():
-                    print(f"{folio}\t\t{datos}")
+                    print(f"Folio\tFecha\t\tNombre del Cliente\tMonto\tNombre del Servicio\tRFC                 Correo Electronico")
+                    print(f"{folio}\t{datos[0]}\t{datos[1]}\t\t{datos[2]}\t\t{datos[3]}\t\t{datos[4]}       {datos[5]}")
                 break
             while True: 
                 try:
                   folio_cancelar=int(input("Ingrese el folio que desea cancelar: "))
                   for folio_cancelar in servicio:
-                        servicio[folio_cancelar] = [folio, fecha_nueva, nombre_cliente, monto, nombre_servicio]
-                        print(servicio[folio_cancelar])
+                        print(f"Folio\tFecha\t\tNombre del Cliente\tMonto\tNombre del Servicio\tRFC                 Correo Electronico")
+                    print(f"{folio}\t{datos[0]}\t{datos[1]}\t\t{datos[2]}\t\t{datos[3]}\t\t{datos[4]}       {datos[5]}")
 
                 except KeyError: 
                     print("No se encuentra registrado ese folio, vuelve a intentarlo")
@@ -201,7 +223,10 @@ while True:
                     servicio_cancelado[folio_cancelar] = [fecha_nueva, nombre_cliente, monto, nombre_servicio]
                     cancelar=servicio.pop(folio_cancelar)
                     print("Se ha cancelado la nota correctamente.")
-                    print(servicio_cancelado[folio_cancelar])
+                    print(f"Folio\tFecha\t\tNombre del Cliente\tMonto\tNombre del Servicio\tRFC                 Correo Electronico")
+                    print(f"{folio}\t{datos[0]}\t{datos[1]}\t\t{datos[2]}\t\t{datos[3]}\t\t{datos[4]}       {datos[5]}")
+                    break
+
                     break
                 elif op_eliminar == 2:
                     print("No se va a cancelar la nota")
@@ -217,7 +242,8 @@ while True:
                   folio_recuperar=int(input("Ingrese el folio que desea recuperar: "))
                   for folio_recuperar in servicio:
                         servicio[folio_recuperar] = [fecha_nueva, nombre_cliente, monto, nombre_servicio]
-                        print(servicio[folio_recuperar])
+                        print(f"Folio\tFecha\t\tNombre del Cliente\tMonto\tNombre del Servicio\tRFC                 Correo Electronico")
+                        print(f"{folio}\t{datos[0]}\t{datos[1]}\t\t{datos[2]}\t\t{datos[3]}\t\t{datos[4]}       {datos[5]}") 
                 except KeyError: 
                     print("No se encuentra registrado ese folio, vuelve a intentarlo")
                     break
