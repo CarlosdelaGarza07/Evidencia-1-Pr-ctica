@@ -7,3 +7,549 @@ import openpyxl
 import sqlite3
 from sqlite3 import Error
 
+
+    if opcion==2:
+                while True:
+                    try:
+                        opcion=int(input("\nMENU CLIENTES\nSeleccione una opcion: \
+                                \n1-Agregar un cliente\n2-Consultas y reportes\n3-Volver al menu\n"))
+                        if opcion==1:
+                            while True:
+                                nombre_cliente=input("\nIngresa el nombre del cliente:\n")
+                                if nombre_cliente.strip()=="":
+                                    print("ERROR, NOMBRE NO VALIDO")
+                                    continue
+                                break
+                            while True:
+                                try:
+                                    rfc_formato = r'^[A-Z&Ñ]{4}\d{6}[A-Z\d]{3}$'
+                                    rfc=input("\nIngrese el RFC, usar el formato de RFC, por ejemplo XEXT990101NI4:\n").strip().upper()
+                                    if re.match(rfc_formato, rfc):
+                                        break
+                                    else:
+                                        print("\nRFC NO VALIDO. INGRESE RFC VALIDO ")
+                                        continue
+                                except Exception:
+                                    print("DATO INCORRECTO, INTENTE DE NUEVO")
+                                    continue
+                            while True:
+                                try:
+                                    correo_formato = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                                    correo=input("\nIngrese su correo electronico:\n")
+                                    if re.match(correo_formato, correo):
+                                        break
+                                    else:
+                                        print("CORREO NO VALIDO. INGRESE CORREO VALIDO")
+                                except Exception:
+                                    print("DATO INCORRECTO, INTENTE DE NUEVO")
+                                    continue
+                            try:
+                                with sqlite3.connect("Taller.db") as conn:
+                                    conn.execute("PRAGMA foreign_keys=1")
+                                    mi_cursor=conn.cursor()
+                                    datos=(nombre_cliente, rfc, correo)
+                                    mi_cursor.execute("INSERT INTO clientes (nombre, rfc, correo) VALUES(?,?,?)", datos)
+                            except Error:
+                                print(Error)
+                            except Exception:
+                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                            finally:
+                                conn.close()
+                        if opcion==2:
+                            while True:
+                                try:
+                                    opcion=int(input("\nCONSULTAS Y REPORTES (CLIENTES)\nSeleccione una opcion: \
+                                        \n1-Busqueda por clave\n2-Busqueda por nombre\n3-Listado de clientes\n4-Volver al menu de clientes\n"))
+                                    if opcion==1:
+                                        while True:
+                                            try:
+                                                with sqlite3.connect("Taller.db") as conn:
+                                                    conn.execute("PRAGMA foreign_keys=1")
+                                                    mi_cursor=conn.cursor()
+                                                    mi_cursor.execute("SELECT clave, nombre FROM clientes ORDER BY clave")
+                                                    lista_clientes=mi_cursor.fetchall()
+                                                    if lista_clientes:
+                                                        print("\nClaves\tNombre")
+                                                        print("-"*16)
+                                                        for clave, nombre in lista_clientes:
+                                                            print(f"{clave}\t{nombre}")
+                                                    else:
+                                                        print("NO SE ENCONTRARON CLIENTES")
+                                            except Error:
+                                                print(Error)
+                                            except Exception:
+                                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                            finally:
+                                                conn.close()
+                                            while True:            
+                                                try:
+                                                    buscar_clave=int(input("\nIngresa la clave deseada: "))
+                                                    if buscar_clave<=0:
+                                                        print("INGRESA UNA CLAVE ADECUADA")
+                                                        continue
+                                                except Exception:
+                                                    print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                    continue
+                                                break
+                                            try:
+                                                with sqlite3.connect("Taller.db") as conn:
+                                                    conn.execute("PRAGMA foreign_keys=1")
+                                                    mi_cursor=conn.cursor()
+                                                    buscar={"clave":buscar_clave}
+                                                    mi_cursor.execute("SELECT * FROM clientes WHERE clave=:clave", buscar)
+                                                    lista_clientes=mi_cursor.fetchall()
+                                                    if lista_clientes:
+                                                        for clave, nombre, rfc, correo in lista_clientes:
+                                                            print(f"\nCLIENTE\n{clave:^8} {nombre}\t{rfc}\t{correo}")
+                                                    else:
+                                                        print("NO HAY CLIENTE CON LA CLAVE INGRESADA")
+                                                        continue
+                                            except Error:
+                                                print(Error)
+                                            except Exception:
+                                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                            finally:
+                                                conn.close()
+                                            break
+                                    if opcion==2:
+                                        while True:
+                                            buscar_cliente=input("\nIngresa el nombre deseado: ")
+                                            buscar_cliente_mayus=buscar_cliente.upper()
+                                            if buscar_cliente_mayus.strip()=="":
+                                                print("ERROR, CLIENTE NO VALIDO")
+                                                continue
+                                            break
+                                        while True:
+                                            try:
+                                                with sqlite3.connect("Taller.db") as conn:
+                                                    conn.execute("PRAGMA foreign_keys=1")
+                                                    mi_cursor=conn.cursor()
+                                                    buscar={"nombre":buscar_cliente_mayus}
+                                                    mi_cursor.execute("SELECT * FROM clientes WHERE UPPER(nombre)=:nombre", buscar)
+                                                    lista_clientes=mi_cursor.fetchall()
+                                                    if lista_clientes:
+                                                        for clave, nombre, rfc, correo in lista_clientes:
+                                                            print(f"\nCLIENTE\n{clave:^8} {nombre}\t{rfc}\t{correo}")
+                                                    else:
+                                                        print("NO HAY CLIENTE CON EL NOMBRE INGRESADO")
+                                                        continue
+                                            except Error:
+                                                print(Error)
+                                            except Exception:
+                                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                            finally:
+                                                conn.close()
+                                                break
+                                    if opcion==3:
+                                        while True:
+                                            try:
+                                                opcion=int(input("\nLISTADO DE CLIENTES\nSeleccione una opcion: \
+                                                    \n1-Ordenado por clave\n2-Ordenado por nombre de cliente\n3-Volver al menu anterior\n"))
+                                                if opcion==1:
+                                                    try:
+                                                        with sqlite3.connect("Taller.db") as conn:
+                                                            conn.execute("PRAGMA foreign_keys=1")
+                                                            mi_cursor=conn.cursor()
+                                                            mi_cursor.execute("SELECT * FROM clientes ORDER BY clave")
+                                                            lista_clientes=mi_cursor.fetchall()
+                                                            if lista_clientes:
+                                                                print("\nClaves\tNombre\t\t\tRfc\tCorreo")
+                                                                print("-"*35)
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    print(f"{clave:^8}{nombre}\t{rfc}\t{correo}")
+                                                            else:
+                                                                print("NO SE ENCONTRARON CLIENTES")
+                                                    except Error:
+                                                        print(Error)
+                                                    except Exception:
+                                                        print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                                    finally:
+                                                        conn.close()
+                                                    while True:
+                                                        try:
+                                                            opcion=int(input("\nDesea exportar el resultado a CSV o Excel?. Seleccione una opcion: \
+                                                                \n1-CSV\n2-Excel\n3-Regresar al menu reportes\n"))
+                                                            if opcion==1:
+                                                                fecha_actual=datetime.date.today()
+                                                                fecha_procesada=fecha_actual.strftime('%m_%d_%Y')
+                                                                
+                                                                archivo=open(f"ReporteClientesActivosPorClave_{fecha_procesada}.csv","w", newline="")
+                                                                grabador=csv.writer(archivo)
+                                                                grabador.writerow(("Clave", "Nombre", "Rfc", "Correo"))
+                                                                for Clave, Nombre, Rfc, Correo in lista_clientes:
+                                                                    grabador.writerow((Clave, Nombre, Rfc, Correo))
+                                                                archivo.close()
+                                                                print("\nEL ARCHIVO CSV SE GUARDO CORRECTAMENTE")  
+                                                            if opcion==2:
+                                                                fecha_actual=datetime.date.today()
+                                                                fecha_procesada=fecha_actual.strftime('%m_%d_%Y')
+                                                                libro=openpyxl.Workbook()
+                                                                hoja=libro["Sheet"]
+                                                                hoja["A1"].value="Clave"
+                                                                hoja["B1"].value="Nombre"
+                                                                hoja["C1"].value="Rfc"
+                                                                hoja["D1"].value="Correo"
+    
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    hoja.cell(row=1+clave, column=1).value=clave
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    hoja.cell(row=1+clave, column=2).value=nombre
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    hoja.cell(row=1+clave, column=3).value=rfc
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    hoja.cell(row=1+clave, column=4).value=correo
+                                                                
+                                                                libro.save(f"ReporteClientesActivosPorClave_{fecha_procesada}.xlsx")
+                                                                print(f"EL ARCHIVO EXCEL SE GUARDO CORRECTAMENTE")
+                                                            if opcion==3:
+                                                                break
+                                                        except Exception:
+                                                            print(f"NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                            continue
+                                                if opcion==2:
+                                                    try:
+                                                        with sqlite3.connect("Taller.db") as conn:
+                                                            conn.execute("PRAGMA foreign_keys=1")
+                                                            mi_cursor=conn.cursor()
+                                                            mi_cursor.execute("SELECT * FROM clientes ORDER BY nombre")
+                                                            lista_clientes=mi_cursor.fetchall()
+                                                            if lista_clientes:
+                                                                print("\nClaves\tNombre\t\t\tRfc\tCorreo")
+                                                                print("-"*45)
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    print(f"{clave:^8}{nombre}\t{rfc}\t{correo}")
+                                                            else:
+                                                                print("NO SE ENCONTRARON CLIENTES")
+                                                    except Error:
+                                                        print(Error)
+                                                    except Exception:
+                                                        print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                                    finally:
+                                                        conn.close()
+                                                    while True:
+                                                        try:
+                                                            opcion=int(input("\nDesea exportar el resultado a CSV o Excel?. Seleccione una opcion: \
+                                                                \n1-CSV\n2-Excel\n3-Regresar al menu reportes\n"))
+                                                            if opcion==1:
+                                                                fecha_actual=datetime.date.today()
+                                                                fecha_procesada=fecha_actual.strftime('%m_%d_%Y')
+                                                                
+                                                                archivo=open(f"ReporteClientesActivosPorNombre_{fecha_procesada}.csv","w", newline="")
+                                                                grabador=csv.writer(archivo)
+                                                                grabador.writerow(("Clave", "Nombre", "Rfc", "Correo"))
+                                                                for Clave, Nombre, Rfc, Correo in lista_clientes:
+                                                                    grabador.writerow((Clave, Nombre, Rfc, Correo))
+                                                                archivo.close()
+                                                                print("\nEL ARCHIVO CSV SE GUARDO CORRECTAMENTE")
+                                                                break
+                                                            if opcion==2:
+                                                                fecha_actual=datetime.date.today()
+                                                                fecha_procesada=fecha_actual.strftime('%m_%d_%Y')
+                                                                libro=openpyxl.Workbook()
+                                                                hoja=libro["Sheet"]
+                                                                hoja["A1"].value="Clave"
+                                                                hoja["B1"].value="Nombre"
+                                                                hoja["C1"].value="Rfc"
+                                                                hoja["D1"].value="Correo"
+    
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    folio=clave-1
+                                                                    hoja.cell(row=1+clave, column=1).value=lista_clientes[folio][0]
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    folio=clave-1
+                                                                    hoja.cell(row=1+clave, column=2).value=lista_clientes[folio][1]
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    folio=clave-1
+                                                                    hoja.cell(row=1+clave, column=3).value=lista_clientes[folio][2]
+                                                                for clave, nombre, rfc, correo in lista_clientes:
+                                                                    folio=clave-1
+                                                                    hoja.cell(row=1+clave, column=4).value=lista_clientes[folio][3]
+                                                                
+                                                                libro.save(f"ReporteClientesActivosPorNombre_{fecha_procesada}.xlsx")
+                                                                print(f"EL ARCHIVO EXCEL SE GUARDO CORRECTAMENTE")
+                                                            if opcion==3:
+                                                                break
+                                                        except Exception:
+                                                            print(f"NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                            continue
+                                                if opcion==3:
+                                                    break
+                                            except Exception:
+                                                print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                continue
+                                    if opcion==4:
+                                        break
+                                except Exception:
+                                    print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                    continue
+                        if opcion==3:
+                            break
+                    except Exception:
+                        print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                        continue
+            if opcion==3:
+                while True:
+                    try:
+                        opcion=int(input("\nMENU SERVICIOS\nSeleccione una opcion: \
+                                \n1-Agregar un servicio\n2-Consultas y reportes\n3-Volver al menu\n")) 
+                        if opcion==1:
+                            while True:
+                                nombre_servicio=input("\nIngresa el nombre del servicio: ")
+                                if nombre_servicio.strip()=="":
+                                    print("ERROR, NOMBRE NO VALIDO")
+                                    continue
+                                break
+                            while True:
+                                try:
+                                    costo_servicio=float(input("Ingrese el costo del servicio: "))
+                                    if costo_servicio<=0:
+                                        print("ERROR, NO PUEDE TENER UN COSTO IGUAL O MENOR A $0.00")
+                                        continue
+                                except Exception:
+                                    print("DATO INCORRECTO, INTENTE DE NUEVO")
+                                    continue
+                                break
+                            try:
+                                with sqlite3.connect("Taller.db") as conn:
+                                    conn.execute("PRAGMA foreign_keys=1")
+                                    mi_cursor=conn.cursor()
+                                    datos=(nombre_servicio, costo_servicio)
+                                    mi_cursor.execute("INSERT INTO servicios (nombre, costo) VALUES(?,?)", datos)
+                            except Error:
+                                print(Error)
+                            except Exception:
+                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                            finally:
+                                conn.close()
+                        if opcion==2:
+                            while True:
+                                try:
+                                    opcion=int(input("\nCONSULTAS Y REPORTES (SERVICIOS)\nSeleccione una opcion: \
+                                        \n1-Busqueda por clave\n2-Busqueda por nombre\n3-Listado de servicios\n4-Volver al menu de servicios\n"))
+                                    if opcion==1:
+                                        while True:
+                                            try:
+                                                with sqlite3.connect("Taller.db") as conn:
+                                                    conn.execute("PRAGMA foreign_keys=1")
+                                                    mi_cursor=conn.cursor()
+                                                    mi_cursor.execute("SELECT clave, nombre FROM servicios ORDER BY clave")
+                                                    lista_servicios=mi_cursor.fetchall()
+                                                    if lista_servicios:
+                                                        print("\nClaves\tNombre")
+                                                        print("-"*16)
+                                                        for clave, nombre in lista_servicios:
+                                                            print(f"{clave}\t{nombre}")
+                                                    else:
+                                                        print("NO SE ENCONTRARON SERVICIOS")
+                                            except Error:
+                                                print(Error)
+                                            except Exception:
+                                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                            finally:
+                                                conn.close()
+                                            while True:            
+                                                try:
+                                                    buscar_clave=int(input("\nIngresa la clave deseada: "))
+                                                    if buscar_clave<=0:
+                                                        print("INGRESA UNA CLAVE ADECUADA")
+                                                        continue
+                                                except Exception:
+                                                    print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                break
+                                            try:
+                                                with sqlite3.connect("Taller.db") as conn:
+                                                    conn.execute("PRAGMA foreign_keys=1")
+                                                    mi_cursor=conn.cursor()
+                                                    buscar={"clave":buscar_clave}
+                                                    mi_cursor.execute("SELECT * FROM servicios WHERE clave=:clave", buscar)
+                                                    lista_servicios=mi_cursor.fetchall()
+                                                    if lista_servicios:
+                                                        for clave, nombre, costo in lista_servicios:
+                                                            print(f"\nSERVICIO\n{clave:^8} {nombre}\t${costo}")
+                                                    else:
+                                                        print("NO HAY SERVICIO CON LA CLAVE INGRESADA")
+                                                        continue
+                                            except Error:
+                                                print(Error)
+                                            except Exception:
+                                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                            finally:
+                                                conn.close()
+                                            break
+                                    if opcion==2:
+                                        while True:
+                                            buscar_servicio=input("\nIngresa el servicio deseado: ")
+                                            buscar_servicio_mayus=buscar_servicio.upper()
+                                            if buscar_servicio_mayus.strip()=="":
+                                                print("ERROR, SERVICIO NO VALIDO")
+                                                continue
+                                            break
+                                        while True:
+                                            try:
+                                                with sqlite3.connect("Taller.db") as conn:
+                                                    conn.execute("PRAGMA foreign_keys=1")
+                                                    mi_cursor=conn.cursor()
+                                                    buscar={"nombre":buscar_servicio_mayus}
+                                                    mi_cursor.execute("SELECT * FROM servicios WHERE UPPER(nombre)=:nombre", buscar)
+                                                    lista_servicios=mi_cursor.fetchall()
+                                                    if lista_servicios:
+                                                        for clave, nombre, costo in lista_servicios:
+                                                            print(f"\nSERVICIO\n{clave:^8} {nombre}\t${costo}")
+                                                    else:
+                                                        print("NO HAY SERVICIO CON EL NOMBRE INGRESADO")
+                                                        continue
+                                            except Error:
+                                                print(Error)
+                                            except Exception:
+                                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                            finally:
+                                                conn.close()
+                                                break
+                                    if opcion==3:
+                                        while True:
+                                            try:
+                                                opcion=int(input("\nLISTADO DE SERVICIOS\nSeleccione una opcion: \
+                                                    \n1-Ordenado por clave\n2-Ordenado por nombre de servicio\n3-Volver al menu anterior\n"))
+                                                if opcion==1:
+                                                    try:
+                                                        with sqlite3.connect("Taller.db") as conn:
+                                                            conn.execute("PRAGMA foreign_keys=1")
+                                                            mi_cursor=conn.cursor()
+                                                            mi_cursor.execute("SELECT * FROM servicios ORDER BY clave")
+                                                            lista_servicios=mi_cursor.fetchall()
+                                                            if lista_servicios:
+                                                                print("\nClaves\tNombre\tCosto")
+                                                                print("-"*25)
+                                                                for clave, nombre, costo in lista_servicios:
+                                                                    print(f"{clave:^8}{nombre}\t${costo}")
+                                                            else:
+                                                                print("NO SE ENCONTRARON SERVICIOS")
+                                                    except Error:
+                                                        print(Error)
+                                                    except Exception:
+                                                        print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                                    finally:
+                                                        conn.close()
+                                                    while True:
+                                                        try:
+                                                            opcion=int(input("\nDesea exportar el resultado a CSV o Excel?. Seleccione una opcion: \
+                                                                \n1-CSV\n2-Excel\n3-Regresar al menu reportes\n"))
+                                                            if opcion==1:
+                                                                fecha_actual=datetime.date.today()
+                                                                fecha_procesada=fecha_actual.strftime('%m_%d_%Y')
+                                                                
+                                                                archivo=open(f"ReporteServiciosPorClave_{fecha_procesada}.csv","w", newline="")
+                                                                grabador=csv.writer(archivo)
+                                                                grabador.writerow(("Clave", "Nombre", "Costo"))
+                                                                for Clave, Nombre, Costo in lista_servicios:
+                                                                    grabador.writerow((Clave, Nombre, Costo))
+                                                                archivo.close()
+                                                                print("\nEL ARCHIVO CSV SE GUARDO CORRECTAMENTE")  
+                                                            if opcion==2:
+                                                                fecha_actual=datetime.date.today()
+                                                                fecha_procesada=fecha_actual.strftime('%m_%d_%Y')
+                                                                libro=openpyxl.Workbook()
+                                                                hoja=libro["Sheet"]
+                                                                hoja["A1"].value="Clave"
+                                                                hoja["B1"].value="Nombre"
+                                                                hoja["C1"].value="Costo"
+    
+                                                                for clave, nombre, costo in lista_servicios:
+                                                                    hoja.cell(row=1+clave, column=1).value=clave
+                                                                for clave, nombre, costo in lista_servicios:
+                                                                    hoja.cell(row=1+clave, column=2).value=nombre
+                                                                for clave, nombre, costo in lista_servicios:
+                                                                    hoja.cell(row=1+clave, column=3).value=f"${costo}"
+                                                                
+                                                                libro.save(f"ReporteServiciosPorClave_{fecha_procesada}.xlsx")
+                                                                print("EL ARCHIVO EXCEL SE GUARDO CORRECTAMENTE")
+                                                            if opcion==3:
+                                                                break
+                                                        except Exception:
+                                                            print(f"NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                            continue
+                                                if opcion==2:
+                                                    try:
+                                                        with sqlite3.connect("Taller.db") as conn:
+                                                            conn.execute("PRAGMA foreign_keys=1")
+                                                            mi_cursor=conn.cursor()
+                                                            mi_cursor.execute("SELECT * FROM servicios ORDER BY nombre")
+                                                            lista_servicios=mi_cursor.fetchall()
+                                                            if lista_servicios:
+                                                                print("\nClaves\tNombre\tCosto")
+                                                                print("-"*25)
+                                                                for clave, nombre, costo in lista_servicios:
+                                                                    print(f"{clave:^8}{nombre}\t${costo}")
+                                                            else:
+                                                                print("NO SE ENCONTRARON SERVICIOS")
+                                                    except Error:
+                                                        print(Error)
+                                                    except Exception:
+                                                        print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                                    finally:
+                                                        conn.close()
+                                                    while True:
+                                                        try:
+                                                            opcion=int(input("\nDesea exportar el resultado a CSV o Excel?. Seleccione una opcion: \
+                                                                \n1-CSV\n2-Excel\n3-Regresar al menu reportes\n"))
+                                                            if opcion==1:
+                                                                fecha_actual=datetime.date.today()
+                                                                fecha_procesada=fecha_actual.strftime('%m_%d_%Y')
+                                                                
+                                                                archivo=open(f"ReporteServiciosPorNombre_{fecha_procesada}.csv","w", newline="")
+                                                                grabador=csv.writer(archivo)
+                                                                grabador.writerow(("Clave", "Nombre", "Costo"))
+                                                                for Clave, Nombre, Costo in lista_servicios:
+                                                                    grabador.writerow((Clave, Nombre, Costo))
+                                                                archivo.close()
+                                                                print("\nEL ARCHIVO CSV SE GUARDO CORRECTAMENTE")
+                                                                break
+                                                            if opcion==2:
+                                                                folio=0
+                                                                fecha_actual=datetime.date.today()
+                                                                fecha_procesada=fecha_actual.strftime('%m_%d_%Y')
+                                                                libro=openpyxl.Workbook()
+                                                                hoja=libro["Sheet"]
+                                                                hoja["A1"].value="Clave"
+                                                                hoja["B1"].value="Nombre"
+                                                                hoja["C1"].value="Costo"
+    
+                                                                for clave, nombre, costo in lista_servicios:
+                                                                    folio=clave-1
+                                                                    hoja.cell(row=1+clave, column=1).value=lista_servicios[folio][0]
+                                                                for clave, nombre, costo in lista_servicios:
+                                                                    folio=clave-1
+                                                                    hoja.cell(row=1+clave, column=2).value=lista_servicios[folio][1]
+                                                                for clave, nombre, costo in lista_servicios:
+                                                                    folio=clave-1
+                                                                    hoja.cell(row=1+clave, column=3).value=f"${lista_servicios[folio][2]}"
+                                                                    
+                                                                libro.save(f"ReporteServiciosPorNombre_{fecha_procesada}.xlsx")
+                                                                print(f"EL ARCHIVO EXCEL SE GUARDO CORRECTAMENTE")
+                                                            if opcion==3:
+                                                                break
+                                                        except Exception:
+                                                            print(f"NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                            continue
+                                                if opcion==3:
+                                                    break
+                                            except Exception:
+                                                print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                continue
+                                    if opcion==4:
+                                        break
+                                except Exception:
+                                    print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                    continue
+                        if opcion==3:
+                            break
+                    except Exception:
+                        print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                        continue
+    
+            if opcion==4:
+                break
+
+    except Exception:
+        print("NO ESCRIBISTE EL DATO CORRECTO O NO EXISTE, VUELVELO A INTENTAR")
+        continue
