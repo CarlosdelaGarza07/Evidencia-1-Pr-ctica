@@ -7,7 +7,314 @@ import openpyxl
 import sqlite3
 from sqlite3 import Error
 
+try:
+    with sqlite3.connect("Taller.db") as conn:
+        conn.execute("PRAGMA foreign_keys=1")
+        mi_cursor=conn.cursor()
+        mi_cursor.execute("CREATE TABLE IF NOT EXISTS servicios \
+                          (clave INTEGER PRIMARY KEY, nombre TEXT NOT NULL, costo INTEGER NOT NULL);")
+        mi_cursor.execute("CREATE TABLE IF NOT EXISTS clientes \
+                          (clave INTEGER PRIMARY KEY, nombre TEXT NOT NULL, rfc TEXT NOT NULL, correo TEXT NOT NULL);")
+        mi_cursor.execute("CREATE TABLE IF NOT EXISTS notas \
+                          (folio INTEGER PRIMARY KEY, fecha timestamp, cliente INTEGER NOT NULL, \
+                          detalle TEXT, monto INTEGER,\
+                          FOREIGN KEY(cliente) REFERENCES clientes(clave));")
+        mi_cursor.execute("CREATE TABLE IF NOT EXISTS detalles \
+                          (folioNotas INTEGER, claveServicios INTEGER, \
+                          FOREIGN KEY(folioNotas) REFERENCES notas(folio), \
+                          FOREIGN KEY(claveServicios) REFERENCES servicios(clave));")
+except Error:
+    print(Error)
+except Exception:
+    print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+finally:
+    conn.close()
 
+while True:
+    try:
+        opcion=int(input("\nBIENVENIDO\nEste es nuestro menu principal, presione un numero para continuar: \
+                         \n1-Menu Notas\n2-Menu Clientes\n3-Menu Servicios\n4-Salir\n"))
+        if opcion==1:
+            while True:
+                try:
+                    opcion=int(input("\nMENU NOTAS\nSeleccione una opcion: \
+                             \n1-Registrar una nota\n2-Cancelar una nota\n3-Recuperar una nota\n4-Consultas y reportes\n5-Volver al menu\n"))
+                    if opcion==1:
+                        while True:
+                            try:
+                                fecha_actual= datetime.date.today()
+                                hora_actual = datetime.datetime.now().time()
+                                fecha_nota = input("\nIngrese la fecha de la nota (dd/mm/aaaa):\n ")
+                                fecha_nueva = datetime.datetime.strptime(fecha_nota, "%d/%m/%Y").date()
+                            except Exception:
+                                print("FECHA NO VALIDA")
+                            else:
+                                if fecha_nueva > fecha_actual:
+                                    print("FECHA MAYOR A LA ACTUAL. INTENTE DE NUEVO")
+                                    continue
+                                break
+                        try:
+                            with sqlite3.connect("Taller.db") as conn:
+                                conn.execute("PRAGMA foreign_keys=1")
+                                mi_cursor=conn.cursor()
+                                mi_cursor.execute("SELECT clave, nombre FROM clientes ORDER BY clave")
+                                lista_clientes=mi_cursor.fetchall()
+                                if lista_clientes:
+                                    print("\nClaves\tNombre")
+                                    print("-"*16)
+                                    for clave, nombre in lista_clientes:
+                                        print(f"{clave}\t{nombre}")
+                                else:
+                                    print("NO SE ENCONTRARON CLIENTES")
+                        except Error:
+                            print(Error)
+                        except Exception:
+                            print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                        finally:
+                            conn.close()
+                        while True:            
+                            try:
+                                buscar_clave_clientes=int(input("\nIngresa la clave deseada: "))
+                                if buscar_clave_clientes<=0:
+                                    print("INGRESA UNA CLAVE ADECUADA")
+                                    continue
+                            except Exception:
+                                print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                continue
+                                break
+                            try:
+                                with sqlite3.connect("Taller.db") as conn:
+                                    conn.execute("PRAGMA foreign_keys=1")
+                                    mi_cursor=conn.cursor()
+                                    buscar={"clave":buscar_clave_clientes}
+                                    mi_cursor.execute("SELECT clave FROM clientes WHERE clave=:clave", buscar)
+                                    lista_clientes=mi_cursor.fetchall()
+                                    if lista_clientes:
+                                        for clave in lista_clientes:
+                                            print("CLIENTE OBTENIDO")
+                                    else:
+                                        print("NO HAY CLIENTE CON LA CLAVE INGRESADA")
+                                        continue
+                            except Error:
+                                print(Error)
+                            except Exception:
+                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()}")
+                            finally:
+                                conn.close()
+                            break
+                        try:
+                            with sqlite3.connect("Taller.db") as conn:
+                                conn.execute("PRAGMA foreign_keys=1")
+                                mi_cursor=conn.cursor()
+                                datos=(datetime.datetime(fecha_nueva.year,fecha_nueva.month,fecha_nueva.day,\
+                                    hora_actual.hour,hora_actual.minute,hora_actual.second), buscar_clave_clientes)
+                                mi_cursor.execute("INSERT INTO notas (fecha, cliente) VALUES(?,?)", datos)
+                        except Error:
+                            print(Error)
+                        except Exception:
+                            print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                        finally:
+                            conn.close()
+                        try:
+                            with sqlite3.connect("Taller.db") as conn:
+                                conn.execute("PRAGMA foreign_keys=1")
+                                mi_cursor=conn.cursor()
+                                fecha_buscar=datetime.datetime(fecha_nueva.year,fecha_nueva.month,fecha_nueva.day,\
+                                    hora_actual.hour,hora_actual.minute,hora_actual.second)
+                                datos={"fecha":fecha_buscar}
+                                mi_cursor.execute("SELECT folio FROM notas WHERE fecha=:fecha", datos) 
+                                lista=mi_cursor.fetchall()
+                        except Error:
+                            print(Error)
+                        except Exception:
+                            print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                        finally:
+                            conn.close()   
+                        try:
+                            with sqlite3.connect("Taller.db") as conn:
+                                conn.execute("PRAGMA foreign_keys=1")
+                                mi_cursor=conn.cursor()
+                                mi_cursor.execute("SELECT clave, nombre FROM servicios ORDER BY clave")
+                                lista_servicios=mi_cursor.fetchall()
+                                if lista_servicios:
+                                    print("\nClaves\tNombre")
+                                    print("-"*16)
+                                    for clave, nombre in lista_servicios:
+                                        print(f"{clave}\t{nombre}")
+                                else:
+                                    print("NO SE ENCONTRARON SERVICIOS")
+                        except Error:
+                            print(Error)
+                        except Exception:
+                            print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                        finally:
+                            conn.close()
+                        while True:            
+                            try:
+                                buscar_clave_servicios=int(input("\nIngresa la clave deseada: "))
+                                if buscar_clave_servicios<=0:
+                                    print("INGRESA UNA CLAVE ADECUADA")
+                                    continue
+                            except Exception:
+                                print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                continue
+                                break
+                            try:
+                                with sqlite3.connect("Taller.db") as conn:
+                                    conn.execute("PRAGMA foreign_keys=1")
+                                    mi_cursor=conn.cursor()
+                                    buscar={"clave":buscar_clave_servicios}
+                                    mi_cursor.execute("SELECT clave FROM servicios WHERE clave=:clave", buscar)
+                                    lista_servicios=mi_cursor.fetchall()
+                                    if lista_servicios:
+                                        for clave in lista_servicios:
+                                            print("SERVICIO OBTENIDO")
+                                    else:
+                                        print("NO HAY SERVICIO CON LA CLAVE INGRESADA")
+                                        continue
+                            except Error:
+                                print(Error)
+                            except Exception:
+                                print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()}")
+                            finally:
+                                conn.close()
+                            break
+                        try:
+                            with sqlite3.connect("Taller.db") as conn:
+                                conn.execute("PRAGMA foreign_keys=1")
+                                mi_cursor=conn.cursor()
+                                insertar=lista[0][0]
+                                valores=(insertar, buscar_clave_servicios)
+                                mi_cursor.execute("INSERT INTO detalles (folioNotas, claveServicios) VALUES(?,?)", valores)     
+                        except Error:
+                            print(Error)
+                        except Exception:
+                            print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()}")
+                        finally:
+                            conn.close()       
+                        while True:
+                            opcion=int(input("\nDeseas agregar un servicio mas al detalle?. Seleccione una opcion: \
+                             \n1-Si\n2-No\n"))
+                            if opcion==1:
+                                while True:
+                                    try:
+                                        with sqlite3.connect("Taller.db") as conn:
+                                            conn.execute("PRAGMA foreign_keys=1")
+                                            mi_cursor=conn.cursor()
+                                            fecha_buscar=datetime.datetime(fecha_nueva.year,fecha_nueva.month,fecha_nueva.day,\
+                                            hora_actual.hour,hora_actual.minute,hora_actual.second)
+                                            datos={"fecha":fecha_buscar}
+                                            mi_cursor.execute("SELECT folio FROM notas WHERE fecha=:fecha", datos) 
+                                            lista=mi_cursor.fetchall()
+                                    except Error:
+                                        print(Error)
+                                    except Exception:
+                                        print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                    finally:
+                                        conn.close() 
+                                    try:
+                                        with sqlite3.connect("Taller.db") as conn:
+                                            conn.execute("PRAGMA foreign_keys=1")
+                                            mi_cursor=conn.cursor()
+                                            mi_cursor.execute("SELECT clave, nombre FROM servicios ORDER BY clave")
+                                            lista_servicios=mi_cursor.fetchall()
+                                            if lista_servicios:
+                                                print("\nClaves\tNombre")
+                                                print("-"*16)
+                                                for clave, nombre in lista_servicios:
+                                                    print(f"{clave}\t{nombre}")
+                                            else:
+                                                print("NO SE ENCONTRARON SERVICIOS")
+                                    except Error:
+                                        print(Error)
+                                    except Exception:
+                                        print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                                    finally:
+                                        conn.close()
+                                    while True:            
+                                        try:
+                                            buscar_clave_servicios=int(input("\nIngresa la clave deseada: "))
+                                            if buscar_clave_servicios<=0:
+                                                print("INGRESA UNA CLAVE ADECUADA")
+                                                continue
+                                        except Exception:
+                                            print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                            continue
+                                            break
+                                        try:
+                                            with sqlite3.connect("Taller.db") as conn:
+                                                conn.execute("PRAGMA foreign_keys=1")
+                                                mi_cursor=conn.cursor()
+                                                buscar={"clave":buscar_clave_servicios}
+                                                mi_cursor.execute("SELECT clave FROM servicios WHERE clave=:clave", buscar)
+                                                lista_servicios=mi_cursor.fetchall()
+                                            if lista_servicios:
+                                                for clave in lista_servicios:
+                                                    print("SERVICIO OBTENIDO")
+                                            else:
+                                                print("NO HAY SERVICIO CON LA CLAVE INGRESADA")
+                                                continue
+                                        except Error:
+                                            print(Error)
+                                        except Exception:
+                                            print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()}")
+                                        finally:
+                                            conn.close()
+                                        break
+                                    try:
+                                        with sqlite3.connect("Taller.db") as conn:
+                                            conn.execute("PRAGMA foreign_keys=1")
+                                            mi_cursor=conn.cursor()
+                                            insertar=lista[0][0]
+                                            valores=(insertar, buscar_clave_servicios)
+                                            mi_cursor.execute("INSERT INTO detalles (folioNotas, claveServicios) VALUES(?,?)", valores)     
+                                    except Error:
+                                        print(Error)
+                                    except Exception:
+                                        print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()}")
+                                    finally:
+                                        conn.close()
+                                    break
+                            if opcion==2:
+                                break
+                        try:
+                            with sqlite3.connect("Taller.db") as conn:
+                                conn.execute("PRAGMA foreign_keys=1")
+                                mi_cursor=conn.cursor()
+                                datos={"folio":insertar}
+                                mi_cursor.execute("SELECT SUM(costo) FROM servicios WHERE clave IN(SELECT claveServicios FROM detalles WHERE folioNotas=:folio)", datos)
+                                lista_monto=mi_cursor.fetchall()
+                                monto=lista_monto[0][0]
+                        except Error:
+                            print(Error)
+                        except Exception:
+                            print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                        finally:
+                            conn.close()
+                        try:
+                            with sqlite3.connect("Taller.db") as conn:
+                                conn.execute("PRAGMA foreign_keys=1")
+                                mi_cursor=conn.cursor()
+                                datos={"monto":monto}
+                                mi_cursor.execute("UPDATE notas SET monto=:monto", datos)
+                        except Error:
+                            print(Error)
+                        except Exception:
+                            print(f"SE PRODUJO EL SIGUIENTE ERROR: {sys.exc_info()[0]}")
+                        finally:
+                            conn.close()
+                        break
+                    if opcion==2:
+                        print("Pendiente")
+                    if opcion==3:
+                        print("Pendiente")
+                    if opcion==4:
+                        print("Pendiente")
+                    if opcion==5:
+                        break
+                except Exception:
+                    print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                    continue
     if opcion==2:
                 while True:
                     try:
