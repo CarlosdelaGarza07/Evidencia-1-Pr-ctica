@@ -5,6 +5,7 @@ import csv
 import re
 import openpyxl
 import sqlite3
+import pandas as pd
 from sqlite3 import Error
 
 try:
