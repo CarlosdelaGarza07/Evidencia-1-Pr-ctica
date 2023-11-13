@@ -1720,8 +1720,232 @@ while True:
                         continue
     
             if opcion==4:
-                break
-
+                while True:
+                    try:
+                        opcion_menu_principal = int(input("\nMENU ESTADÍSTICAS\nSeleccione una opcion: \
+                                             \n1-Servicio más prestado\n2-Clientes con más notas\n3-Promedio de los montos de las notas\n4-Volver al menu\n"))
+                        if opcion_menu_principal == 1:
+                            while True:
+                                try:
+                                    num_servicios = int(input("Ingrese la cantidad de servicios para conocer la moda: "))
+                                    if num_servicios < 1:
+                                        print("Por favor, ingrese un número válido mayor que 0.")
+                                    else:
+                                        break
+                                except ValueError:
+                                    print("Por favor, ingrese un número válido.")
+    
+                            with sqlite3.connect("Taller.db") as conn:
+                                mi_cursor = conn.cursor()
+                                mi_cursor.execute("SELECT * FROM notas")
+                                columns = [column[0] for column in mi_cursor.description]
+                                results = []
+                                for row in mi_cursor.fetchall():
+                                    results.append(dict(zip(columns, row)))
+    
+                            diccionario_datos_notas = {"folio": [], "fecha": [], "cliente": [], "detalle": [], "monto": []}
+                            datos_notas_df = pd.DataFrame(diccionario_datos_notas)
+                            print(datos_notas_df)
+    
+                            fecha_actual = datetime.date.today()
+                            fecha_1_str = input("\nIngresa tu primera fecha (formato: dd/mm/yyyy): ")
+                            fecha_1 = datetime.datetime.strptime(fecha_1_str, "%d/%m/%Y").date()
+    
+                            if fecha_1 > fecha_actual:
+                                print("FECHA NO ESCRITA CORRECTAMENTE")
+                            else:
+                                fecha_2_str = input("\nIngresa tu segunda fecha (formato: dd/mm/yyyy): ")
+                                fecha_2 = datetime.datetime.strptime(fecha_2_str, "%d/%m/%Y").date()
+    
+                                if fecha_2 > fecha_actual:
+                                    print("FECHA NO ESCRITA CORRECTAMENTE")
+                                else:
+                                    filtro_fecha = (datos_notas_df["fecha"] >= fecha_1) & (datos_notas_df["fecha"] <= fecha_2)
+                                    datos_filtrados = datos_notas_df[filtro_fecha]
+    
+                                    if datos_filtrados.empty:
+                                        print("No hay datos en el rango de fechas proporcionado.")
+                                        break
+                                    else:
+                                        while True:
+                                            try:
+                                                opcion_menu_interno = int(input("\nDesea exportar el resultado a CSV o Excel?. Seleccione una opcion: \
+                                                    \n1-CSV\n2-Excel\n3-Regresar al menu reportes\n"))
+                                                if opcion_menu_interno == 1:
+                                                    archivo = open(f"ReporteServiciosMasPrestados_{fecha_1}_{fecha_2}.csv", "w", newline="")
+                                                    grabador = csv.writer(archivo)
+                                                    grabador.writerow(("Detalle", "Monto"))
+                                                    for index, row in datos_filtrados.iterrows():
+                                                        grabador.writerow((row["detalle"], row["monto"]))
+                                                    archivo.close()
+                                                    print("\nEL ARCHIVO CSV SE GUARDO CORRECTAMENTE")
+                                                    break
+                                                elif opcion_menu_interno == 2:
+                                                    libro = openpyxl.Workbook()
+                                                    hoja = libro["Sheet"]
+                                                    hoja["A1"].value = "Detalle"
+                                                    hoja["B1"].value = "Monto"
+                                                    for index, row in datos_filtrados.iterrows():
+                                                        hoja.append([row["detalle"], row["monto"]])
+                                                    libro.save(f"ReporteServiciosPorNombre_{fecha_1}_{fecha_2}_.xlsx")
+                                                    print(f"EL ARCHIVO EXCEL SE GUARDO CORRECTAMENTE")
+                                                    break
+                                                elif opcion_menu_interno == 3:
+                                                    break
+                                                else:
+                                                    print("Opción no válida. Por favor, seleccione una opción válida.")
+                                            except Exception:
+                                                print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                continue
+    
+                        if opcion_menu_principal == 2:
+                            while True:
+                                try:
+                                    with sqlite3.connect("Taller.db") as conn:
+                                        mi_cursor = conn.cursor()
+                                        mi_cursor.execute("SELECT * FROM notas")
+                                        columns = [column[0] for column in mi_cursor.description]
+                                        results = []
+                                        for row in mi_cursor.fetchall():
+                                            results.append(dict(zip(columns, row)))
+                                except Error as e:
+                                    print(e)
+    
+                                diccionario_datos_notas = {"folio": [], "fecha": [], "cliente": [], "detalle": [], "monto": []}
+                                datos_notas_df = pd.DataFrame(diccionario_datos_notas)
+                                print(datos_notas_df)
+    
+                                fecha_actual = datetime.date.today()
+                                fecha_1_str = input("\nIngresa tu primera fecha (formato: dd/mm/yyyy): ")
+                                fecha_1 = datetime.datetime.strptime(fecha_1_str, "%d/%m/%Y").date()
+    
+                                if fecha_1 > fecha_actual:
+                                    print("FECHA NO ESCRITA CORRECTAMENTE")
+                                else:
+                                    fecha_2_str = input("\nIngresa tu segunda fecha (formato: dd/mm/yyyy): ")
+                                    fecha_2 = datetime.datetime.strptime(fecha_2_str, "%d/%m/%Y").date()
+    
+                                    if fecha_2 > fecha_actual:
+                                        print("FECHA NO ESCRITA CORRECTAMENTE")
+                                    else:
+                                        filtro_fecha = (datos_notas_df["fecha"] >= fecha_1) & (datos_notas_df["fecha"] <= fecha_2)
+                                        datos_filtrados = datos_notas_df[filtro_fecha]
+    
+                                        if datos_filtrados.empty:
+                                            print("No hay datos en el rango de fechas proporcionado.")
+                                        else:
+                                            while True:
+                                                try:
+                                                    num_clientes = int(input("Ingrese la cantidad de servicios para conocer la moda: "))
+                                                    if num_clientes < 1:
+                                                        print("Por favor, ingrese un número válido mayor que 0.")
+                                                    else:
+                                                        moda_clientes = datos_filtrados['cliente'].head(num_clientes).mode()
+                                                        if moda_clientes.empty:
+                                                            print("No hay moda para los servicios en el rango de fechas proporcionado.")
+                                                        else:
+                                                            print(f"Moda de los primeros {num_clientes} servicios en el rango de fechas:")
+                                                            print(moda_clientes)
+                                                        break
+                                                except ValueError:
+                                                    print("Por favor, ingrese un número válido.")
+                                break
+                                while True:
+                                            try:
+                                                opcion_menu_interno = int(input("\nDesea exportar el resultado a CSV o Excel?. Seleccione una opcion: \
+                                                    \n1-CSV\n2-Excel\n3-Regresar al menu reportes\n"))
+                                                if opcion_menu_interno == 1:
+                                                    archivo = open(f"ReporteClientesConMasNotas_{fecha_1}_{fecha_2}.csv", "w", newline="")
+                                                    grabador = csv.writer(archivo)
+                                                    grabador.writerow(("Cliente", "Notas"))
+                                                    for index, row in datos_filtrados.iterrows():
+                                                        grabador.writerow((row["cliente"], row["notas"]))
+                                                    archivo.close()
+                                                    print("\nEL ARCHIVO CSV SE GUARDO CORRECTAMENTE")
+                                                    break
+                                                elif opcion_menu_interno == 2:
+                                                    libro = openpyxl.Workbook()
+                                                    hoja = libro["Sheet"]
+                                                    hoja["A1"].value = "Cliente"
+                                                    hoja["B1"].value = "Notas"
+                                                    for index, row in datos_filtrados.iterrows():
+                                                        hoja.append([row["detalle"], row["monto"]])
+                                                    libro.save(f"ReporteClientesConMasNotas_{fecha_1}_{fecha_2}_.xlsx")
+                                                    print(f"EL ARCHIVO EXCEL SE GUARDO CORRECTAMENTE")
+                                                    break
+                                                elif opcion_menu_interno == 3:
+                                                    break
+                                                else:
+                                                    print("Opción no válida. Por favor, seleccione una opción válida.")
+                                            except Exception:
+                                                print("NO ESCRIBISTE EL DATO CORRECTO, VUELVE A INTENTAR")
+                                                continue
+                    except Exception as e:
+                        print(f"Falló: {e}")
+                        pass
+                    
+                    if opcion_menu_principal == 3:
+                            while True:
+                                try:
+                                    with sqlite3.connect("Taller.db") as conn:
+                                        mi_cursor = conn.cursor()
+                                        mi_cursor.execute("SELECT * FROM notas")
+                                        columns = [column[0] for column in mi_cursor.description]
+                                        results = []
+                                        for row in mi_cursor.fetchall():
+                                            results.append(dict(zip(columns, row)))
+    
+                                    diccionario_datos_notas = {"folio": [], "fecha": [], "cliente": [], "detalle": [], "monto": []}
+                                    datos_notas_df = pd.DataFrame(diccionario_datos_notas)
+                                    print(datos_notas_df)
+    
+                                    fecha_inicial_str = input("\nIngrese la fecha inicial del período a reportar (formato: dd/mm/yyyy): ")
+                                    fecha_inicial = datetime.datetime.strptime(fecha_inicial_str, "%d/%m/%Y").date()
+    
+                                    fecha_final_str = input("\nIngrese la fecha final del período a reportar (formato: dd/mm/yyyy): ")
+                                    fecha_final = datetime.datetime.strptime(fecha_final_str, "%d/%m/%Y").date()
+    
+                                    if fecha_final < fecha_inicial:
+                                        print("La fecha final debe ser por lo menos igual a la fecha inicial del período.")
+                                    else:
+                                        filtro_fecha = (datos_notas_df["fecha"] >= fecha_inicial) & (datos_notas_df["fecha"] <= fecha_final)
+                                        datos_filtrados = datos_notas_df[filtro_fecha]
+    
+                                    if datos_filtrados.empty:
+                                        print("No hay datos en el rango de fechas proporcionado.")
+                                    else:
+                                        print(datos_filtrados["monto"].mean())
+    
+                                    if pd.notna(datos_filtrados["monto"].mean()):
+                                        print(f"\nPromedio de los montos de las notas para el período seleccionado: {promedio_monto}")
+                                    else:
+                                        print("No hay datos de montos para calcular el promedio.")
+    
+                                except Exception as e:
+                                    print(f"Error: {e}")
+                                    break
+                            pass
+    
+                    if opcion_menu_principal == 4:
+                            print("Saliendo del programa.")
+                            break
+    
+                    else:
+                            print("Opción no válida. Por favor, seleccione una opción válida.")
+    
+    
+    
         except Exception:
             print("NO ESCRIBISTE EL DATO CORRECTO O NO EXISTE, VUELVELO A INTENTAR")
             continue
+    
+        except Exception:
+            print("NO ESCRIBISTE EL DATO CORRECTO O NO EXISTE, VUELVELO A INTENTAR")
+            continue
+    
+        if opcion==5:
+          break
+    
+            except Exception:
+                print("NO ESCRIBISTE EL DATO CORRECTO O NO EXISTE, VUELVELO A INTENTAR")
+                continue
